@@ -12,8 +12,8 @@ export class CreateToolInstancesUseCase {
 	async execute(
 		toolTypeId: string,
 		serialCode: string,
-		garageId: number,
-		conditionId: number,
+		garageId: string,
+		conditionId: string,
 		status: string = 'available',
 		lastAssignedUser?: string,
 	): Promise<ToolInstances> {

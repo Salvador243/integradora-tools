@@ -12,10 +12,10 @@ export class CreateToolTypesUseCase {
 	async execute(
 		code: string,
 		name: string,
-		categoryId: number,
+		categoryId: string,
 		status: string = 'active',
 		image?: string,
-		garageId?: number,
+		garageId?: string,
 	): Promise<ToolTypes> {
 		// Validar que el código no exista
 		const existingToolTypes = await this.toolTypesRepository.findAll(1, 1000);

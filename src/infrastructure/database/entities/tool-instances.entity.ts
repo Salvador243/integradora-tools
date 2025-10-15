@@ -4,24 +4,41 @@ import {
 	PrimaryGeneratedColumn,
 	CreateDateColumn,
 	UpdateDateColumn,
+	ManyToOne,
+	JoinColumn,
 } from 'typeorm';
+import { ToolTypesEntity } from './tool-types.entity';
+import { GarageEntity } from './garage.entity';
+import { ConditionEntity } from './condition.entity';
 
 @Entity('tool_instances')
 export class ToolInstancesEntity {
 	@PrimaryGeneratedColumn('uuid')
 	uuid: string;
 
-	@Column({ type: 'varchar', name: 'tool_type_id' })
+	@Column({ type: 'uuid', name: 'tool_type_id' })
 	toolTypeId: string;
+
+	@ManyToOne(() => ToolTypesEntity)
+	@JoinColumn({ name: 'tool_type_id' })
+	toolType: ToolTypesEntity;
 
 	@Column({ type: 'varchar', length: 100, unique: true, name: 'serial_code' })
 	serialCode: string;
 
-	@Column({ type: 'int', name: 'garage_id' })
-	garageId: number;
+	@Column({ type: 'uuid', name: 'garage_id' })
+	garageId: string;
 
-	@Column({ type: 'int', name: 'condition_id' })
-	conditionId: number;
+	@ManyToOne(() => GarageEntity)
+	@JoinColumn({ name: 'garage_id' })
+	garage: GarageEntity;
+
+	@Column({ type: 'uuid', name: 'condition_id' })
+	conditionId: string;
+
+	@ManyToOne(() => ConditionEntity)
+	@JoinColumn({ name: 'condition_id' })
+	condition: ConditionEntity;
 
 	@Column({
 		type: 'enum',

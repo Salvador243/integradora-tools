@@ -1,9 +1,9 @@
 import {
 	IsIn,
 	IsNotEmpty,
-	IsNumber,
 	IsOptional,
 	IsString,
+	IsUUID,
 	MaxLength,
 } from 'class-validator';
 
@@ -18,9 +18,9 @@ export class CreateToolTypesDto {
 	@MaxLength(255)
 	name: string;
 
-	@IsNumber()
+	@IsUUID()
 	@IsNotEmpty()
-	categoryId: number;
+	categoryId: string;
 
 	@IsString()
 	@IsOptional()
@@ -32,7 +32,7 @@ export class CreateToolTypesDto {
 	@MaxLength(500)
 	image?: string;
 
-	@IsNumber()
+	@IsUUID()
 	@IsOptional()
-	garageId?: number;
+	garageId?: string;
 }

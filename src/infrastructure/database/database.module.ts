@@ -6,6 +6,9 @@ import {
 	ToolInstancesEntity,
 	AssignmentsEntity,
 	ToolHistoryEntity,
+	CategoryEntity,
+	GarageEntity,
+	ConditionEntity,
 } from './entities';
 
 @Module({
@@ -25,6 +28,9 @@ import {
 					ToolInstancesEntity,
 					AssignmentsEntity,
 					ToolHistoryEntity,
+					CategoryEntity,
+					GarageEntity,
+					ConditionEntity,
 				],
 				synchronize: configService.get<string>('NODE_ENV') !== 'production',
 				logging: configService.get<string>('NODE_ENV') === 'development',
@@ -35,6 +41,9 @@ import {
 			ToolInstancesEntity,
 			AssignmentsEntity,
 			ToolHistoryEntity,
+			CategoryEntity,
+			GarageEntity,
+			ConditionEntity,
 		]),
 	],
 	exports: [TypeOrmModule],

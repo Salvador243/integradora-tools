@@ -12,6 +12,7 @@ import {
 import { CreateToolInstancesUseCase } from '../../../application/use-cases/tool-instances/create-tool-instances.use-case';
 import { DeleteToolInstancesUseCase } from '../../../application/use-cases/tool-instances/delete-tool-instances.use-case';
 import { GetToolInstancesByUuidUseCase } from '../../../application/use-cases/tool-instances/get-tool-instances-by-uuid.use-case';
+import { GetToolInstancesByToolTypeUseCase } from '../../../application/use-cases/tool-instances/get-tool-instances-by-tool-type.use-case';
 import { GetToolInstancesUseCase } from '../../../application/use-cases/tool-instances/get-tool-instances.use-case';
 import { UpdateToolInstancesUseCase } from '../../../application/use-cases/tool-instances/update-tool-instances.use-case';
 import { CreateToolInstancesDto } from '../../dtos/tool-instances/create-tool-instances.dto';
@@ -22,6 +23,7 @@ export class ToolInstancesController {
 		private readonly createToolInstancesUseCase: CreateToolInstancesUseCase,
 		private readonly getToolInstancesUseCase: GetToolInstancesUseCase,
 		private readonly getToolInstancesByUuidUseCase: GetToolInstancesByUuidUseCase,
+		private readonly getToolInstancesByToolTypeUseCase: GetToolInstancesByToolTypeUseCase,
 		private readonly updateToolInstancesUseCase: UpdateToolInstancesUseCase,
 		private readonly deleteToolInstancesUseCase: DeleteToolInstancesUseCase,
 	) {}
@@ -48,7 +50,7 @@ export class ToolInstancesController {
 	@Get('get-all')
 	async findAll(
 		@Query('page') page: string = '1',
-		@Query('limit') limit: string = '10',
+		@Query('limit') limit: string = '10000',
 	) {
 		const pageNumber = parseInt(page, 10) || 1;
 		const limitNumber = parseInt(limit, 10) || 10;
@@ -72,6 +74,28 @@ export class ToolInstancesController {
 			success: true,
 			message: 'Instancia de herramienta obtenida exitosamente',
 			data: toolInstance,
+		};
+	}
+
+	@Get('get-by-tool-type/:toolTypeId')
+	async findByToolType(
+		@Param('toolTypeId') toolTypeId: string,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+	) {
+		// Si no se pasan page y limit, traer todos los registros
+		const pageNumber = page ? parseInt(page, 10) : 1;
+		const limitNumber = limit ? parseInt(limit, 10) : 999999;
+
+		const result = await this.getToolInstancesByToolTypeUseCase.execute(
+			toolTypeId,
+			pageNumber,
+			limitNumber,
+		);
+		return {
+			success: true,
+			message: 'Instancias de herramienta obtenidas exitosamente por tipo',
+			data: result,
 		};
 	}
 

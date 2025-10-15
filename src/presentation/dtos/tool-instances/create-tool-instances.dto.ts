@@ -1,14 +1,14 @@
 import {
 	IsIn,
 	IsNotEmpty,
-	IsNumber,
 	IsOptional,
 	IsString,
+	IsUUID,
 	MaxLength,
 } from 'class-validator';
 
 export class CreateToolInstancesDto {
-	@IsString()
+	@IsUUID()
 	@IsNotEmpty()
 	toolTypeId: string;
 
@@ -17,13 +17,13 @@ export class CreateToolInstancesDto {
 	@MaxLength(100)
 	serialCode: string;
 
-	@IsNumber()
+	@IsUUID()
 	@IsNotEmpty()
-	garageId: number;
+	garageId: string;
 
-	@IsNumber()
+	@IsUUID()
 	@IsNotEmpty()
-	conditionId: number;
+	conditionId: string;
 
 	@IsString()
 	@IsOptional()

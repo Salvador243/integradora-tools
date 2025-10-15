@@ -4,7 +4,11 @@ import {
 	PrimaryGeneratedColumn,
 	CreateDateColumn,
 	UpdateDateColumn,
+	ManyToOne,
+	JoinColumn,
 } from 'typeorm';
+import { CategoryEntity } from './category.entity';
+import { GarageEntity } from './garage.entity';
 
 @Entity('tool_types')
 export class ToolTypesEntity {
@@ -17,8 +21,12 @@ export class ToolTypesEntity {
 	@Column({ type: 'varchar', length: 255 })
 	name: string;
 
-	@Column({ type: 'int', name: 'category_id' })
-	categoryId: number;
+	@Column({ type: 'uuid', name: 'category_id' })
+	categoryId: string;
+
+	@ManyToOne(() => CategoryEntity)
+	@JoinColumn({ name: 'category_id' })
+	category: CategoryEntity;
 
 	@Column({
 		type: 'enum',
@@ -30,8 +38,12 @@ export class ToolTypesEntity {
 	@Column({ type: 'varchar', length: 500, nullable: true })
 	image: string;
 
-	@Column({ type: 'int', name: 'garage_id', nullable: true })
-	garageId: number;
+	@Column({ type: 'uuid', name: 'garage_id', nullable: true })
+	garageId: string;
+
+	@ManyToOne(() => GarageEntity)
+	@JoinColumn({ name: 'garage_id' })
+	garage: GarageEntity;
 
 	@CreateDateColumn({ name: 'created_at' })
 	createdAt: Date;

@@ -22,16 +22,31 @@ export class ApiToolTypesRepository implements ToolTypesRepository {
 			garageId: toolType.garageId ?? undefined,
 		});
 		const savedToolType = await this.toolTypesRepository.save(toolTypeEntity);
+		
+		// Reload with relations
+		const toolTypeWithRelations = await this.toolTypesRepository.findOne({
+			where: { uuid: savedToolType.uuid },
+			relations: ['category', 'garage'],
+		});
+		
+		if (!toolTypeWithRelations) {
+			throw new Error('Failed to load created tool type');
+		}
+		
 		return new ToolTypes(
-			savedToolType.uuid,
-			savedToolType.code,
-			savedToolType.name,
-			savedToolType.categoryId,
-			savedToolType.status,
-			savedToolType.image,
-			savedToolType.garageId,
-			savedToolType.createdAt,
-			savedToolType.updatedAt,
+			toolTypeWithRelations.uuid,
+			toolTypeWithRelations.code,
+			toolTypeWithRelations.name,
+			toolTypeWithRelations.categoryId,
+			toolTypeWithRelations.status,
+			toolTypeWithRelations.image,
+			toolTypeWithRelations.garageId,
+			toolTypeWithRelations.createdAt,
+			toolTypeWithRelations.updatedAt,
+			toolTypeWithRelations.category?.code,
+			toolTypeWithRelations.category?.name,
+			toolTypeWithRelations.garage?.code ?? null,
+			toolTypeWithRelations.garage?.name ?? null,
 		);
 	}
 
@@ -44,6 +59,7 @@ export class ApiToolTypesRepository implements ToolTypesRepository {
 			skip,
 			take: limit,
 			order: { name: 'ASC' },
+			relations: ['category', 'garage'],
 		});
 
 		const toolTypes = toolTypeEntities.map(
@@ -58,6 +74,10 @@ export class ApiToolTypesRepository implements ToolTypesRepository {
 					entity.garageId,
 					entity.createdAt,
 					entity.updatedAt,
+					entity.category?.code,
+					entity.category?.name,
+					entity.garage?.code ?? null,
+					entity.garage?.name ?? null,
 				),
 		);
 
@@ -68,7 +88,10 @@ export class ApiToolTypesRepository implements ToolTypesRepository {
 	}
 
 	async findByUuid(uuid: string): Promise<ToolTypes | null> {
-		const toolTypeEntity = await this.toolTypesRepository.findOneBy({ uuid });
+		const toolTypeEntity = await this.toolTypesRepository.findOne({
+			where: { uuid },
+			relations: ['category', 'garage'],
+		});
 		if (!toolTypeEntity) return null;
 		return new ToolTypes(
 			toolTypeEntity.uuid,
@@ -80,6 +103,10 @@ export class ApiToolTypesRepository implements ToolTypesRepository {
 			toolTypeEntity.garageId,
 			toolTypeEntity.createdAt,
 			toolTypeEntity.updatedAt,
+			toolTypeEntity.category?.code,
+			toolTypeEntity.category?.name,
+			toolTypeEntity.garage?.code ?? null,
+			toolTypeEntity.garage?.name ?? null,
 		);
 	}
 
@@ -104,7 +131,16 @@ export class ApiToolTypesRepository implements ToolTypesRepository {
 			toolTypeEntity,
 			updateData,
 		);
-		const updatedToolType = await this.toolTypesRepository.save(updatedToolTypeEntity);
+		await this.toolTypesRepository.save(updatedToolTypeEntity);
+		
+		// Reload with relations
+		const updatedToolType = await this.toolTypesRepository.findOne({
+			where: { uuid },
+			relations: ['category', 'garage'],
+		});
+		
+		if (!updatedToolType) return null;
+		
 		return new ToolTypes(
 			updatedToolType.uuid,
 			updatedToolType.code,
@@ -115,6 +151,10 @@ export class ApiToolTypesRepository implements ToolTypesRepository {
 			updatedToolType.garageId,
 			updatedToolType.createdAt,
 			updatedToolType.updatedAt,
+			updatedToolType.category?.code,
+			updatedToolType.category?.name,
+			updatedToolType.garage?.code ?? null,
+			updatedToolType.garage?.name ?? null,
 		);
 	}
 

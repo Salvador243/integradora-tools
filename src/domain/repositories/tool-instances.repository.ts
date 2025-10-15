@@ -12,6 +12,12 @@ export interface ToolInstancesRepository {
 
 	findByUuid(uuid: string): Promise<ToolInstances | null>;
 
+	findByToolTypeId(
+		toolTypeId: string,
+		page: number,
+		limit: number,
+	): Promise<{ toolInstances: ToolInstances[]; total: number }>;
+
 	update(
 		uuid: string,
 		toolInstance: Partial<

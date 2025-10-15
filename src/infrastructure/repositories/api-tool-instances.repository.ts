@@ -25,16 +25,33 @@ export class ApiToolInstancesRepository implements ToolInstancesRepository {
 		});
 		const savedToolInstance =
 			await this.toolInstancesRepository.save(toolInstanceEntity);
+		
+		// Reload with relations
+		const toolInstanceWithRelations = await this.toolInstancesRepository.findOne({
+			where: { uuid: savedToolInstance.uuid },
+			relations: ['toolType', 'toolType.category', 'garage', 'condition'],
+		});
+		
+		if (!toolInstanceWithRelations) {
+			throw new Error('Failed to load created tool instance');
+		}
+		
 		return new ToolInstances(
-			savedToolInstance.uuid,
-			savedToolInstance.toolTypeId,
-			savedToolInstance.serialCode,
-			savedToolInstance.garageId,
-			savedToolInstance.conditionId,
-			savedToolInstance.status,
-			savedToolInstance.lastAssignedUser,
-			savedToolInstance.createdAt,
-			savedToolInstance.updatedAt,
+			toolInstanceWithRelations.uuid,
+			toolInstanceWithRelations.toolTypeId,
+			toolInstanceWithRelations.serialCode,
+			toolInstanceWithRelations.garageId,
+			toolInstanceWithRelations.conditionId,
+			toolInstanceWithRelations.status,
+			toolInstanceWithRelations.lastAssignedUser,
+			toolInstanceWithRelations.createdAt,
+			toolInstanceWithRelations.updatedAt,
+			toolInstanceWithRelations.toolType?.code,
+			toolInstanceWithRelations.toolType?.name,
+			toolInstanceWithRelations.garage?.code,
+			toolInstanceWithRelations.garage?.name,
+			toolInstanceWithRelations.condition?.code,
+			toolInstanceWithRelations.condition?.description,
 		);
 	}
 
@@ -48,6 +65,7 @@ export class ApiToolInstancesRepository implements ToolInstancesRepository {
 				skip,
 				take: limit,
 				order: { createdAt: 'DESC' },
+				relations: ['toolType', 'toolType.category', 'garage', 'condition'],
 			});
 
 		const toolInstances = toolInstanceEntities.map(
@@ -62,6 +80,12 @@ export class ApiToolInstancesRepository implements ToolInstancesRepository {
 					entity.lastAssignedUser,
 					entity.createdAt,
 					entity.updatedAt,
+					entity.toolType?.code,
+					entity.toolType?.name,
+					entity.garage?.code,
+					entity.garage?.name,
+					entity.condition?.code,
+					entity.condition?.description,
 				),
 		);
 
@@ -72,8 +96,10 @@ export class ApiToolInstancesRepository implements ToolInstancesRepository {
 	}
 
 	async findByUuid(uuid: string): Promise<ToolInstances | null> {
-		const toolInstanceEntity =
-			await this.toolInstancesRepository.findOneBy({ uuid });
+		const toolInstanceEntity = await this.toolInstancesRepository.findOne({
+			where: { uuid },
+			relations: ['toolType', 'toolType.category', 'garage', 'condition'],
+		});
 		if (!toolInstanceEntity) return null;
 		return new ToolInstances(
 			toolInstanceEntity.uuid,
@@ -85,7 +111,55 @@ export class ApiToolInstancesRepository implements ToolInstancesRepository {
 			toolInstanceEntity.lastAssignedUser,
 			toolInstanceEntity.createdAt,
 			toolInstanceEntity.updatedAt,
+			toolInstanceEntity.toolType?.code,
+			toolInstanceEntity.toolType?.name,
+			toolInstanceEntity.garage?.code,
+			toolInstanceEntity.garage?.name,
+			toolInstanceEntity.condition?.code,
+			toolInstanceEntity.condition?.description,
 		);
+	}
+
+	async findByToolTypeId(
+		toolTypeId: string,
+		page: number,
+		limit: number,
+	): Promise<{ toolInstances: ToolInstances[]; total: number }> {
+		const skip = (page - 1) * limit;
+		const [toolInstanceEntities, total] =
+			await this.toolInstancesRepository.findAndCount({
+				where: { toolTypeId },
+				skip,
+				take: limit,
+				order: { createdAt: 'DESC' },
+				relations: ['toolType', 'toolType.category', 'garage', 'condition'],
+			});
+
+		const toolInstances = toolInstanceEntities.map(
+			(entity) =>
+				new ToolInstances(
+					entity.uuid,
+					entity.toolTypeId,
+					entity.serialCode,
+					entity.garageId,
+					entity.conditionId,
+					entity.status,
+					entity.lastAssignedUser,
+					entity.createdAt,
+					entity.updatedAt,
+					entity.toolType?.code,
+					entity.toolType?.name,
+					entity.garage?.code,
+					entity.garage?.name,
+					entity.condition?.code,
+					entity.condition?.description,
+				),
+		);
+
+		return {
+			toolInstances,
+			total,
+		};
 	}
 
 	async update(
@@ -117,9 +191,16 @@ export class ApiToolInstancesRepository implements ToolInstancesRepository {
 			toolInstanceEntity,
 			updateData,
 		);
-		const updatedToolInstance = await this.toolInstancesRepository.save(
-			updatedToolInstanceEntity,
-		);
+		await this.toolInstancesRepository.save(updatedToolInstanceEntity);
+		
+		// Reload with relations
+		const updatedToolInstance = await this.toolInstancesRepository.findOne({
+			where: { uuid },
+			relations: ['toolType', 'toolType.category', 'garage', 'condition'],
+		});
+		
+		if (!updatedToolInstance) return null;
+		
 		return new ToolInstances(
 			updatedToolInstance.uuid,
 			updatedToolInstance.toolTypeId,
@@ -130,6 +211,12 @@ export class ApiToolInstancesRepository implements ToolInstancesRepository {
 			updatedToolInstance.lastAssignedUser,
 			updatedToolInstance.createdAt,
 			updatedToolInstance.updatedAt,
+			updatedToolInstance.toolType?.code,
+			updatedToolInstance.toolType?.name,
+			updatedToolInstance.garage?.code,
+			updatedToolInstance.garage?.name,
+			updatedToolInstance.condition?.code,
+			updatedToolInstance.condition?.description,
 		);
 	}
 
