@@ -3,6 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssignmentsRepository } from '../../domain/repositories/assignments.repository';
 import { Assignments } from '../../domain/entities/assignments/assignments.entity';
+import {
+	AssignmentsWithRelations,
+	ToolInstance,
+	ToolType,
+	Condition,
+} from '../../domain/entities/assignments/assignments-with-relations.entity';
 import { AssignmentsEntity } from '../database/entities/assignments.entity';
 
 @Injectable()
@@ -42,29 +48,65 @@ export class ApiAssignmentsRepository implements AssignmentsRepository {
 	async findAll(
 		page: number,
 		limit: number,
-	): Promise<{ assignments: Assignments[]; total: number }> {
+	): Promise<{ assignments: AssignmentsWithRelations[]; total: number }> {
 		const skip = (page - 1) * limit;
 		const [assignmentEntities, total] =
 			await this.assignmentsRepository.findAndCount({
 				skip,
 				take: limit,
 				order: { createdAt: 'DESC' },
+				relations: [
+					'toolInstance',
+					'toolInstance.toolType',
+					'conditionSalida',
+					'conditionRegreso',
+				],
 			});
 
-		const assignments = assignmentEntities.map(
-			(entity) =>
-				new Assignments(
-					entity.uuid,
-					entity.toolInstanceId,
-					entity.userAssigned,
-					entity.fechaSalida,
-					entity.fechaRegreso,
-					entity.conditionIdSalida,
-					entity.conditionIdRegreso,
-					entity.status,
-					entity.createdAt,
-				),
-		);
+		const assignments = assignmentEntities.map((entity) => {
+			const toolType = new ToolType(
+				entity.toolInstance.toolType.uuid,
+				entity.toolInstance.toolType.code,
+				entity.toolInstance.toolType.name,
+				entity.toolInstance.toolType.status,
+				entity.toolInstance.toolType.image,
+			);
+
+			const toolInstance = new ToolInstance(
+				entity.toolInstance.uuid,
+				entity.toolInstance.serialCode,
+				entity.toolInstance.status,
+				toolType,
+			);
+
+			const conditionSalida = new Condition(
+				entity.conditionSalida.uuid,
+				entity.conditionSalida.code,
+				entity.conditionSalida.description,
+				entity.conditionSalida.status,
+			);
+
+			const conditionRegreso = entity.conditionRegreso
+				? new Condition(
+						entity.conditionRegreso.uuid,
+						entity.conditionRegreso.code,
+						entity.conditionRegreso.description,
+						entity.conditionRegreso.status,
+					)
+				: null;
+
+			return new AssignmentsWithRelations(
+				entity.uuid,
+				toolInstance,
+				entity.userAssigned,
+				entity.fechaSalida,
+				entity.fechaRegreso,
+				conditionSalida,
+				conditionRegreso,
+				entity.status,
+				entity.createdAt,
+			);
+		});
 
 		return {
 			assignments,

@@ -1,4 +1,5 @@
 import { Assignments } from '../entities/assignments/assignments.entity';
+import { AssignmentsWithRelations } from '../entities/assignments/assignments-with-relations.entity';
 
 export interface AssignmentsRepository {
 	create(
@@ -8,7 +9,7 @@ export interface AssignmentsRepository {
 	findAll(
 		page: number,
 		limit: number,
-	): Promise<{ assignments: Assignments[]; total: number }>;
+	): Promise<{ assignments: AssignmentsWithRelations[]; total: number }>;
 
 	findByUuid(uuid: string): Promise<Assignments | null>;
 

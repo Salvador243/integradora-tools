@@ -5,8 +5,8 @@ export class Assignments {
 		public readonly userAssigned: string,
 		public readonly fechaSalida: Date,
 		public readonly fechaRegreso: Date | null,
-		public readonly conditionIdSalida: number,
-		public readonly conditionIdRegreso: number | null,
+		public readonly conditionIdSalida: string,
+		public readonly conditionIdRegreso: string | null,
 		public readonly status: string,
 		public readonly createdAt: Date,
 	) {}

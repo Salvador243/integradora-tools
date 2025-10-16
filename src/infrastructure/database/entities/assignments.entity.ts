@@ -3,7 +3,11 @@ import {
 	Column,
 	PrimaryGeneratedColumn,
 	CreateDateColumn,
+	ManyToOne,
+	JoinColumn,
 } from 'typeorm';
+import { ToolInstancesEntity } from './tool-instances.entity';
+import { ConditionEntity } from './condition.entity';
 
 @Entity('assignments')
 export class AssignmentsEntity {
@@ -12,6 +16,10 @@ export class AssignmentsEntity {
 
 	@Column({ type: 'varchar', name: 'tool_instance_id' })
 	toolInstanceId: string;
+
+	@ManyToOne(() => ToolInstancesEntity)
+	@JoinColumn({ name: 'tool_instance_id' })
+	toolInstance: ToolInstancesEntity;
 
 	@Column({ type: 'varchar', length: 255, name: 'user_assigned' })
 	userAssigned: string;
@@ -22,11 +30,19 @@ export class AssignmentsEntity {
 	@Column({ type: 'datetime', nullable: true, name: 'fecha_regreso' })
 	fechaRegreso: Date;
 
-	@Column({ type: 'int', name: 'condition_id_salida' })
-	conditionIdSalida: number;
+	@Column({ type: 'varchar', name: 'condition_id_salida' })
+	conditionIdSalida: string;
 
-	@Column({ type: 'int', nullable: true, name: 'condition_id_regreso' })
-	conditionIdRegreso: number;
+	@ManyToOne(() => ConditionEntity)
+	@JoinColumn({ name: 'condition_id_salida' })
+	conditionSalida: ConditionEntity;
+
+	@Column({ type: 'varchar', nullable: true, name: 'condition_id_regreso' })
+	conditionIdRegreso: string;
+
+	@ManyToOne(() => ConditionEntity)
+	@JoinColumn({ name: 'condition_id_regreso' })
+	conditionRegreso: ConditionEntity;
 
 	@Column({
 		type: 'enum',

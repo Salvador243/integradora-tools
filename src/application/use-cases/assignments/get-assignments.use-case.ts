@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Assignments } from '../../../domain/entities/assignments/assignments.entity';
+import { AssignmentsWithRelations } from '../../../domain/entities/assignments/assignments-with-relations.entity';
 import type { AssignmentsRepository } from '../../../domain/repositories/assignments.repository';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class GetAssignmentsUseCase {
 	async execute(
 		page: number,
 		limit: number,
-	): Promise<{ assignments: Assignments[]; total: number }> {
+	): Promise<{ assignments: AssignmentsWithRelations[]; total: number }> {
 		return this.assignmentsRepository.findAll(page, limit);
 	}
 }

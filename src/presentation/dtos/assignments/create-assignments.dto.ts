@@ -26,13 +26,13 @@ export class CreateAssignmentsDto {
 	@IsOptional()
 	fechaRegreso?: Date;
 
-	@IsNumber()
+	@IsString()
 	@IsNotEmpty()
-	conditionIdSalida: number;
+	conditionIdSalida: string;
 
-	@IsNumber()
+	@IsString()
 	@IsOptional()
-	conditionIdRegreso?: number;
+	conditionIdRegreso?: string;
 
 	@IsString()
 	@IsOptional()

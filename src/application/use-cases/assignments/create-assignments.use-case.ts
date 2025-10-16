@@ -13,9 +13,9 @@ export class CreateAssignmentsUseCase {
 		toolInstanceId: string,
 		userAssigned: string,
 		fechaSalida: Date,
-		conditionIdSalida: number,
+		conditionIdSalida: string,
 		fechaRegreso?: Date,
-		conditionIdRegreso?: number,
+		conditionIdRegreso?: string,
 		status: string = 'open',
 	): Promise<Assignments> {
 		return await this.assignmentsRepository.create({
