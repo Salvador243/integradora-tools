@@ -20,5 +20,10 @@ import { ApiToolInstancesRepository } from '../../infrastructure/repositories/ap
 			useClass: ApiToolInstancesRepository,
 		},
 	],
+	exports: [
+		// Exportar el repositorio y use cases para otros módulos
+		'ToolInstancesRepository',
+		...TOOL_INSTANCES_USE_CASES,
+	],
 })
 export class ToolInstancesModule {}

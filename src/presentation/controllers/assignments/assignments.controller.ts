@@ -45,7 +45,7 @@ export class AssignmentsController {
 			await this.updateToolInstanceUseCase.execute(
 				assignment.toolInstanceId, {
 					lastAssignedUser: assignment.userAssigned,
-					status: assignment.status,
+					status: 'assigned',
 				}
 			);
 		} catch (error) {

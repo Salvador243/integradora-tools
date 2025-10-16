@@ -4,9 +4,13 @@ import { AssignmentsEntity } from '../../infrastructure/database/entities/assign
 import { AssignmentsController } from '../controllers/assignments/assignments.controller';
 import { ASSIGNMENTS_USE_CASES } from '../../application/use-cases/assignments/exports-provider.use-case';
 import { ApiAssignmentsRepository } from '../../infrastructure/repositories/api-assignments.repository';
+import { ToolInstancesModule } from './tool-instances.module';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([AssignmentsEntity])],
+	imports: [
+		TypeOrmModule.forFeature([AssignmentsEntity]),
+		ToolInstancesModule, // Importar para usar UpdateToolInstancesUseCase
+	],
 	controllers: [AssignmentsController],
 	providers: [
 		// Use Cases
