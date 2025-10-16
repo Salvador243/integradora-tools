@@ -30,14 +30,14 @@ export class AssignmentsEntity {
 	@Column({ type: 'datetime', nullable: true, name: 'fecha_regreso' })
 	fechaRegreso: Date;
 
-	@Column({ type: 'varchar', name: 'condition_id_salida' })
+	@Column({ type: 'varchar', length: 255, name: 'condition_id_salida' })
 	conditionIdSalida: string;
 
 	@ManyToOne(() => ConditionEntity)
 	@JoinColumn({ name: 'condition_id_salida' })
 	conditionSalida: ConditionEntity;
 
-	@Column({ type: 'varchar', nullable: true, name: 'condition_id_regreso' })
+	@Column({ type: 'varchar', length: 255, nullable: true, name: 'condition_id_regreso' })
 	conditionIdRegreso: string;
 
 	@ManyToOne(() => ConditionEntity)
