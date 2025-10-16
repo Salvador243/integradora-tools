@@ -15,6 +15,7 @@ import { GetAssignmentsByUuidUseCase } from '../../../application/use-cases/assi
 import { GetAssignmentsUseCase } from '../../../application/use-cases/assignments/get-assignments.use-case';
 import { UpdateAssignmentsUseCase } from '../../../application/use-cases/assignments/update-assignments.use-case';
 import { CreateAssignmentsDto } from '../../dtos/assignments/create-assignments.dto';
+import { UpdateToolInstancesUseCase } from 'src/application/use-cases/tool-instances/update-tool-instances.use-case';
 
 @Controller('assignments')
 export class AssignmentsController {
@@ -24,6 +25,7 @@ export class AssignmentsController {
 		private readonly getAssignmentsByUuidUseCase: GetAssignmentsByUuidUseCase,
 		private readonly updateAssignmentsUseCase: UpdateAssignmentsUseCase,
 		private readonly deleteAssignmentsUseCase: DeleteAssignmentsUseCase,
+		private readonly updateToolInstanceUseCase: UpdateToolInstancesUseCase,
 	) {}
 
 	@Post('create')
@@ -39,6 +41,17 @@ export class AssignmentsController {
 			createAssignmentsDto.conditionIdRegreso,
 			createAssignmentsDto.status ?? 'open',
 		);
+		try {
+			await this.updateToolInstanceUseCase.execute(
+				assignment.toolInstanceId, {
+					lastAssignedUser: assignment.userAssigned,
+					status: assignment.status,
+				}
+			);
+		} catch (error) {
+			console.log('Error al actualizar la instancia de herramienta', error);
+		}
+
 		return {
 			success: true,
 			message: 'Asignación creada exitosamente',
