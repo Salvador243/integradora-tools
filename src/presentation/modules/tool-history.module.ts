@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ToolHistoryEntity } from '../../infrastructure/database/entities/tool-history.entity';
 import { GarageEntity } from '../../infrastructure/database/entities/garage.entity';
 import { ConditionEntity } from '../../infrastructure/database/entities/condition.entity';
+import { ToolInstancesEntity } from '../../infrastructure/database/entities/tool-instances.entity';
+import { ToolTypesEntity } from '../../infrastructure/database/entities/tool-types.entity';
 import { ToolHistoryController } from '../controllers/tool-history/tool-history.controller';
 import { TOOL_HISTORY_USE_CASES } from '../../application/use-cases/tool-history/exports-provider.use-case';
 import { ApiToolHistoryRepository } from '../../infrastructure/repositories/api-tool-history.repository';
@@ -11,6 +13,8 @@ import { ApiToolHistoryRepository } from '../../infrastructure/repositories/api-
 	imports: [
 		TypeOrmModule.forFeature([
 			ToolHistoryEntity,
+			ToolInstancesEntity,
+			ToolTypesEntity,
 			GarageEntity,
 			ConditionEntity,
 		]),

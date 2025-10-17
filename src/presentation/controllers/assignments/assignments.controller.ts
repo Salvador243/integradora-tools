@@ -18,6 +18,7 @@ import { CreateAssignmentsDto } from '../../dtos/assignments/create-assignments.
 import { UpdateToolInstancesUseCase } from '../../../application/use-cases/tool-instances/update-tool-instances.use-case';
 import { CreateToolHistoryUseCase } from '../../../application/use-cases/tool-history/create-tool-history.use-case';
 import { GetToolInstancesByUuidUseCase } from '../../../application/use-cases/tool-instances/get-tool-instances-by-uuid.use-case';
+import { GetLatestToolHistoryByToolInstanceUseCase } from '../../../application/use-cases/tool-history/get-latest-tool-history-by-tool-instance.use-case';
 
 @Controller('assignments')
 export class AssignmentsController {
@@ -30,6 +31,7 @@ export class AssignmentsController {
 		private readonly updateToolInstanceUseCase: UpdateToolInstancesUseCase,
 		private readonly createToolHistoryUseCase: CreateToolHistoryUseCase,
 		private readonly getToolInstancesByUuidUseCase: GetToolInstancesByUuidUseCase,
+		private readonly getLatestToolHistoryByToolInstanceUseCase: GetLatestToolHistoryByToolInstanceUseCase,
 	) {}
 
 	@Post('create')
@@ -96,24 +98,60 @@ export class AssignmentsController {
 		const pageNumber = parseInt(page, 10) || 1;
 		const limitNumber = parseInt(limit, 10) || 10;
 
-		const assignments = await this.getAssignmentsUseCase.execute(
+		const result = await this.getAssignmentsUseCase.execute(
 			pageNumber,
 			limitNumber,
 		);
+
+		// Agregar tipo_evento a cada asignación
+		const assignmentsWithTipoEvento = await Promise.all(
+			result.assignments.map(async (assignment) => {
+				const latestHistory =
+					await this.getLatestToolHistoryByToolInstanceUseCase.execute(
+						assignment.toolInstance.uuid,
+					);
+				return {
+					...assignment,
+					tipo_evento: latestHistory?.tipoEvento || null,
+				};
+			}),
+		);
+
 		return {
 			success: true,
 			message: 'Asignaciones obtenidas exitosamente',
-			data: assignments,
+			data: {
+				assignments: assignmentsWithTipoEvento,
+				total: result.total,
+			},
 		};
 	}
 
 	@Get('get-by-uuid/:uuid')
 	async findOne(@Param('uuid') uuid: string) {
 		const assignment = await this.getAssignmentsByUuidUseCase.execute(uuid);
+
+		if (!assignment) {
+			return {
+				success: false,
+				message: 'Asignación no encontrada',
+				data: null,
+			};
+		}
+
+		// Agregar tipo_evento del último historial
+		const latestHistory =
+			await this.getLatestToolHistoryByToolInstanceUseCase.execute(
+				assignment.toolInstanceId,
+			);
+
 		return {
 			success: true,
 			message: 'Asignación obtenida exitosamente',
-			data: assignment,
+			data: {
+				...assignment,
+				tipo_evento: latestHistory?.tipoEvento || null,
+			},
 		};
 	}
 
@@ -127,8 +165,8 @@ export class AssignmentsController {
 			updateAssignmentsDto,
 		);
 
-		// Si hay fecha de regreso, registrar el evento de devolución
-		if (updateAssignmentsDto.fechaRegreso) {
+		// Si hay tipo_evento, registrar el evento en el historial
+		if (updateAssignmentsDto.tipo_evento) {
 			try {
 				// Obtener la instancia de herramienta para obtener el garageId
 				const toolInstance = await this.getToolInstancesByUuidUseCase.execute(
@@ -139,28 +177,37 @@ export class AssignmentsController {
 					throw new Error('Instancia de herramienta no encontrada');
 				}
 
-				// Actualizar el status de la herramienta a 'available' si el assignment se cerró
-				if (updateAssignmentsDto.status === 'closed') {
+				// Actualizar el status de la herramienta según el tipo de evento
+				if (updateAssignmentsDto.tipo_evento === 'returned' && updateAssignmentsDto.status === 'closed') {
+					// Si es devolución y se cierra, la herramienta vuelve a estar disponible
 					await this.updateToolInstanceUseCase.execute(
 						assignment.toolInstanceId,
 						{
 							status: 'available',
 						},
 					);
+				} else if (updateAssignmentsDto.tipo_evento === 'maintenance') {
+					// Si va a mantenimiento, actualizar el status
+					await this.updateToolInstanceUseCase.execute(
+						assignment.toolInstanceId,
+						{
+							status: 'maintenance',
+						},
+					);
 				}
 
-				// Crear registro en tool_history con tipo 'returned'
+				// Crear registro en tool_history con el tipo de evento recibido
 				await this.createToolHistoryUseCase.execute(
 					assignment.toolInstanceId,
 					toolInstance.garageId,
 					assignment.userAssigned,
 					assignment.conditionIdRegreso || assignment.conditionIdSalida,
-					updateAssignmentsDto.fechaRegreso,
-					'returned', // tipo de evento
+					updateAssignmentsDto.fechaRegreso || new Date(),
+					updateAssignmentsDto.tipo_evento,
 				);
 			} catch (error) {
 				console.error(
-					'Error al actualizar la instancia de herramienta o crear historial de devolución:',
+					'Error al actualizar la instancia de herramienta o crear historial:',
 					error,
 				);
 			}

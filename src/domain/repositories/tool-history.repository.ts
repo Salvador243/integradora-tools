@@ -13,4 +13,8 @@ export interface ToolHistoryRepository {
 	): Promise<ToolHistory[]>;
 
 	findByUuid(uuid: string): Promise<ToolHistory | null>;
+
+	findLatestByToolInstanceId(
+		toolInstanceId: string,
+	): Promise<ToolHistory | null>;
 }

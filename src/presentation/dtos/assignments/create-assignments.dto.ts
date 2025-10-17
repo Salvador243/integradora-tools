@@ -38,4 +38,9 @@ export class CreateAssignmentsDto {
 	@IsOptional()
 	@IsIn(['open', 'closed'])
 	status?: string;
+
+	@IsString()
+	@IsOptional()
+	@IsIn(['assigned', 'returned', 'maintenance', 'transferred'])
+	tipo_evento?: string;
 }

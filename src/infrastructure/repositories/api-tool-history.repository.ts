@@ -44,7 +44,7 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 				skip,
 				take: limit,
 				order: { fechaEvento: 'DESC' },
-				relations: ['garage', 'condition'],
+				relations: ['toolInstance', 'toolInstance.toolType', 'garage', 'condition'],
 			});
 
 		const toolHistory = toolHistoryEntities.map(
@@ -57,8 +57,18 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 					entity.conditionId,
 					entity.fechaEvento,
 					entity.tipoEvento,
+					// ToolInstance fields
+					entity.toolInstance?.uuid,
+					entity.toolInstance?.serialCode,
+					entity.toolInstance?.status,
+					entity.toolInstance?.toolType?.code,
+					entity.toolInstance?.toolType?.name,
+					// Garage fields
+					entity.garage?.uuid,
 					entity.garage?.code,
 					entity.garage?.name,
+					// Condition fields
+					entity.condition?.uuid,
 					entity.condition?.code,
 					entity.condition?.description,
 				),
@@ -74,7 +84,7 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 		const toolHistoryEntities = await this.toolHistoryRepository.find({
 			where: { toolInstanceId },
 			order: { fechaEvento: 'DESC' },
-			relations: ['garage', 'condition'],
+			relations: ['toolInstance', 'toolInstance.toolType', 'garage', 'condition'],
 		});
 
 		return toolHistoryEntities.map(
@@ -87,8 +97,18 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 					entity.conditionId,
 					entity.fechaEvento,
 					entity.tipoEvento,
+					// ToolInstance fields
+					entity.toolInstance?.uuid,
+					entity.toolInstance?.serialCode,
+					entity.toolInstance?.status,
+					entity.toolInstance?.toolType?.code,
+					entity.toolInstance?.toolType?.name,
+					// Garage fields
+					entity.garage?.uuid,
 					entity.garage?.code,
 					entity.garage?.name,
+					// Condition fields
+					entity.condition?.uuid,
 					entity.condition?.code,
 					entity.condition?.description,
 				),
@@ -98,7 +118,7 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 	async findByUuid(uuid: string): Promise<ToolHistory | null> {
 		const toolHistoryEntity = await this.toolHistoryRepository.findOne({
 			where: { uuid },
-			relations: ['garage', 'condition'],
+			relations: ['toolInstance', 'toolInstance.toolType', 'garage', 'condition'],
 		});
 		if (!toolHistoryEntity) return null;
 		return new ToolHistory(
@@ -109,8 +129,52 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 			toolHistoryEntity.conditionId,
 			toolHistoryEntity.fechaEvento,
 			toolHistoryEntity.tipoEvento,
+			// ToolInstance fields
+			toolHistoryEntity.toolInstance?.uuid,
+			toolHistoryEntity.toolInstance?.serialCode,
+			toolHistoryEntity.toolInstance?.status,
+			toolHistoryEntity.toolInstance?.toolType?.code,
+			toolHistoryEntity.toolInstance?.toolType?.name,
+			// Garage fields
+			toolHistoryEntity.garage?.uuid,
 			toolHistoryEntity.garage?.code,
 			toolHistoryEntity.garage?.name,
+			// Condition fields
+			toolHistoryEntity.condition?.uuid,
+			toolHistoryEntity.condition?.code,
+			toolHistoryEntity.condition?.description,
+		);
+	}
+
+	async findLatestByToolInstanceId(
+		toolInstanceId: string,
+	): Promise<ToolHistory | null> {
+		const toolHistoryEntity = await this.toolHistoryRepository.findOne({
+			where: { toolInstanceId },
+			order: { fechaEvento: 'DESC' },
+			relations: ['toolInstance', 'toolInstance.toolType', 'garage', 'condition'],
+		});
+		if (!toolHistoryEntity) return null;
+		return new ToolHistory(
+			toolHistoryEntity.uuid,
+			toolHistoryEntity.toolInstanceId,
+			toolHistoryEntity.garageId,
+			toolHistoryEntity.userAssigned,
+			toolHistoryEntity.conditionId,
+			toolHistoryEntity.fechaEvento,
+			toolHistoryEntity.tipoEvento,
+			// ToolInstance fields
+			toolHistoryEntity.toolInstance?.uuid,
+			toolHistoryEntity.toolInstance?.serialCode,
+			toolHistoryEntity.toolInstance?.status,
+			toolHistoryEntity.toolInstance?.toolType?.code,
+			toolHistoryEntity.toolInstance?.toolType?.name,
+			// Garage fields
+			toolHistoryEntity.garage?.uuid,
+			toolHistoryEntity.garage?.code,
+			toolHistoryEntity.garage?.name,
+			// Condition fields
+			toolHistoryEntity.condition?.uuid,
 			toolHistoryEntity.condition?.code,
 			toolHistoryEntity.condition?.description,
 		);

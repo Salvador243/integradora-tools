@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { GarageEntity } from './garage.entity';
 import { ConditionEntity } from './condition.entity';
+import { ToolInstancesEntity } from './tool-instances.entity';
 
 @Entity('tool_history')
 export class ToolHistoryEntity {
@@ -15,6 +16,10 @@ export class ToolHistoryEntity {
 
 	@Column({ type: 'varchar', name: 'tool_instance_id' })
 	toolInstanceId: string;
+
+	@ManyToOne(() => ToolInstancesEntity)
+	@JoinColumn({ name: 'tool_instance_id' })
+	toolInstance: ToolInstancesEntity;
 
 	@Column({ type: 'uuid', name: 'garage_id' })
 	garageId: string;
