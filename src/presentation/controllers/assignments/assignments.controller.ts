@@ -15,7 +15,9 @@ import { GetAssignmentsByUuidUseCase } from '../../../application/use-cases/assi
 import { GetAssignmentsUseCase } from '../../../application/use-cases/assignments/get-assignments.use-case';
 import { UpdateAssignmentsUseCase } from '../../../application/use-cases/assignments/update-assignments.use-case';
 import { CreateAssignmentsDto } from '../../dtos/assignments/create-assignments.dto';
-import { UpdateToolInstancesUseCase } from 'src/application/use-cases/tool-instances/update-tool-instances.use-case';
+import { UpdateToolInstancesUseCase } from '../../../application/use-cases/tool-instances/update-tool-instances.use-case';
+import { CreateToolHistoryUseCase } from '../../../application/use-cases/tool-history/create-tool-history.use-case';
+import { GetToolInstancesByUuidUseCase } from '../../../application/use-cases/tool-instances/get-tool-instances-by-uuid.use-case';
 
 @Controller('assignments')
 export class AssignmentsController {
@@ -26,6 +28,8 @@ export class AssignmentsController {
 		private readonly updateAssignmentsUseCase: UpdateAssignmentsUseCase,
 		private readonly deleteAssignmentsUseCase: DeleteAssignmentsUseCase,
 		private readonly updateToolInstanceUseCase: UpdateToolInstancesUseCase,
+		private readonly createToolHistoryUseCase: CreateToolHistoryUseCase,
+		private readonly getToolInstancesByUuidUseCase: GetToolInstancesByUuidUseCase,
 	) {}
 
 	@Post('create')
@@ -41,15 +45,40 @@ export class AssignmentsController {
 			createAssignmentsDto.conditionIdRegreso,
 			createAssignmentsDto.status ?? 'open',
 		);
+
 		try {
+			// Obtener la instancia de herramienta para obtener el garageId
+			const toolInstance = await this.getToolInstancesByUuidUseCase.execute(
+				assignment.toolInstanceId,
+			);
+
+			if (!toolInstance) {
+				throw new Error('Instancia de herramienta no encontrada');
+			}
+
+			// Actualizar el status y lastAssignedUser de la herramienta
 			await this.updateToolInstanceUseCase.execute(
-				assignment.toolInstanceId, {
+				assignment.toolInstanceId,
+				{
 					lastAssignedUser: assignment.userAssigned,
 					status: 'assigned',
-				}
+				},
+			);
+
+			// Crear registro en tool_history
+			await this.createToolHistoryUseCase.execute(
+				assignment.toolInstanceId,
+				toolInstance.garageId,
+				assignment.userAssigned,
+				assignment.conditionIdSalida,
+				assignment.fechaSalida,
+				'assigned', // tipo de evento
 			);
 		} catch (error) {
-			console.log('Error al actualizar la instancia de herramienta', error);
+			console.error(
+				'Error al actualizar la instancia de herramienta o crear historial:',
+				error,
+			);
 		}
 
 		return {
@@ -97,6 +126,46 @@ export class AssignmentsController {
 			uuid,
 			updateAssignmentsDto,
 		);
+
+		// Si hay fecha de regreso, registrar el evento de devolución
+		if (updateAssignmentsDto.fechaRegreso) {
+			try {
+				// Obtener la instancia de herramienta para obtener el garageId
+				const toolInstance = await this.getToolInstancesByUuidUseCase.execute(
+					assignment.toolInstanceId,
+				);
+
+				if (!toolInstance) {
+					throw new Error('Instancia de herramienta no encontrada');
+				}
+
+				// Actualizar el status de la herramienta a 'available' si el assignment se cerró
+				if (updateAssignmentsDto.status === 'closed') {
+					await this.updateToolInstanceUseCase.execute(
+						assignment.toolInstanceId,
+						{
+							status: 'available',
+						},
+					);
+				}
+
+				// Crear registro en tool_history con tipo 'returned'
+				await this.createToolHistoryUseCase.execute(
+					assignment.toolInstanceId,
+					toolInstance.garageId,
+					assignment.userAssigned,
+					assignment.conditionIdRegreso || assignment.conditionIdSalida,
+					updateAssignmentsDto.fechaRegreso,
+					'returned', // tipo de evento
+				);
+			} catch (error) {
+				console.error(
+					'Error al actualizar la instancia de herramienta o crear historial de devolución:',
+					error,
+				);
+			}
+		}
+
 		return {
 			success: true,
 			message: 'Asignación actualizada exitosamente',

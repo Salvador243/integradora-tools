@@ -2,8 +2,8 @@ import {
 	IsDateString,
 	IsIn,
 	IsNotEmpty,
-	IsNumber,
 	IsString,
+	IsUUID,
 	MaxLength,
 } from 'class-validator';
 
@@ -12,18 +12,18 @@ export class CreateToolHistoryDto {
 	@IsNotEmpty()
 	toolInstanceId: string;
 
-	@IsNumber()
+	@IsUUID()
 	@IsNotEmpty()
-	garageId: number;
+	garageId: string;
 
 	@IsString()
 	@IsNotEmpty()
 	@MaxLength(255)
 	userAssigned: string;
 
-	@IsNumber()
+	@IsUUID()
 	@IsNotEmpty()
-	conditionId: number;
+	conditionId: string;
 
 	@IsDateString()
 	@IsNotEmpty()

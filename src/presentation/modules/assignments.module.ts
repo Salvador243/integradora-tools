@@ -5,11 +5,13 @@ import { AssignmentsController } from '../controllers/assignments/assignments.co
 import { ASSIGNMENTS_USE_CASES } from '../../application/use-cases/assignments/exports-provider.use-case';
 import { ApiAssignmentsRepository } from '../../infrastructure/repositories/api-assignments.repository';
 import { ToolInstancesModule } from './tool-instances.module';
+import { ToolHistoryModule } from './tool-history.module';
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([AssignmentsEntity]),
 		ToolInstancesModule, // Importar para usar UpdateToolInstancesUseCase
+		ToolHistoryModule, // Importar para usar CreateToolHistoryUseCase
 	],
 	controllers: [AssignmentsController],
 	providers: [

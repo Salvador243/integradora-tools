@@ -44,6 +44,7 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 				skip,
 				take: limit,
 				order: { fechaEvento: 'DESC' },
+				relations: ['garage', 'condition'],
 			});
 
 		const toolHistory = toolHistoryEntities.map(
@@ -56,6 +57,10 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 					entity.conditionId,
 					entity.fechaEvento,
 					entity.tipoEvento,
+					entity.garage?.code,
+					entity.garage?.name,
+					entity.condition?.code,
+					entity.condition?.description,
 				),
 		);
 
@@ -69,6 +74,7 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 		const toolHistoryEntities = await this.toolHistoryRepository.find({
 			where: { toolInstanceId },
 			order: { fechaEvento: 'DESC' },
+			relations: ['garage', 'condition'],
 		});
 
 		return toolHistoryEntities.map(
@@ -81,13 +87,18 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 					entity.conditionId,
 					entity.fechaEvento,
 					entity.tipoEvento,
+					entity.garage?.code,
+					entity.garage?.name,
+					entity.condition?.code,
+					entity.condition?.description,
 				),
 		);
 	}
 
 	async findByUuid(uuid: string): Promise<ToolHistory | null> {
-		const toolHistoryEntity = await this.toolHistoryRepository.findOneBy({
-			uuid,
+		const toolHistoryEntity = await this.toolHistoryRepository.findOne({
+			where: { uuid },
+			relations: ['garage', 'condition'],
 		});
 		if (!toolHistoryEntity) return null;
 		return new ToolHistory(
@@ -98,6 +109,10 @@ export class ApiToolHistoryRepository implements ToolHistoryRepository {
 			toolHistoryEntity.conditionId,
 			toolHistoryEntity.fechaEvento,
 			toolHistoryEntity.tipoEvento,
+			toolHistoryEntity.garage?.code,
+			toolHistoryEntity.garage?.name,
+			toolHistoryEntity.condition?.code,
+			toolHistoryEntity.condition?.description,
 		);
 	}
 }

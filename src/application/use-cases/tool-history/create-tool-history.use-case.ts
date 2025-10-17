@@ -11,9 +11,9 @@ export class CreateToolHistoryUseCase {
 
 	async execute(
 		toolInstanceId: string,
-		garageId: number,
+		garageId: string,
 		userAssigned: string,
-		conditionId: number,
+		conditionId: string,
 		fechaEvento: Date,
 		tipoEvento: string,
 	): Promise<ToolHistory> {
