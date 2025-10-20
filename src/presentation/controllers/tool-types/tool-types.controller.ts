@@ -44,18 +44,12 @@ export class ToolTypesController {
 	}
 
 	@Get('get-all')
-	async findAll(
-		@Query('page') page: string = '1',
-		@Query('limit') limit: string = '10',
-	) {
-		const pageNumber = parseInt(page, 10) || 1;
-		const limitNumber = parseInt(limit, 10) || 10;
-
-		const toolTypes = await this.getToolTypesUseCase.execute(pageNumber, limitNumber);
+	async findAll() {
+		const result = await this.getToolTypesUseCase.executeGroupedByCategory();
 		return {
 			success: true,
-			message: 'Tipos de herramienta obtenidos exitosamente',
-			data: toolTypes,
+			message: 'Tipos de herramienta agrupados por categoría obtenidos exitosamente',
+			data: result,
 		};
 	}
 

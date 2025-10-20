@@ -87,6 +87,59 @@ export class ApiToolTypesRepository implements ToolTypesRepository {
 		};
 	}
 
+	async findAllGroupedByCategory(): Promise<any> {
+		const toolTypeEntities = await this.toolTypesRepository.find({
+			order: { name: 'ASC' },
+			relations: ['category', 'garage'],
+		});
+
+		// Agrupar por categoría
+		const categoryMap = new Map<string, any>();
+
+		toolTypeEntities.forEach((entity) => {
+			if (!entity.category) return;
+
+			const categoryId = entity.category.uuid;
+
+			if (!categoryMap.has(categoryId)) {
+				categoryMap.set(categoryId, {
+					uuid: entity.category.uuid,
+					code: entity.category.code,
+					name: entity.category.name,
+					status: entity.category.status,
+					toolTypes: [],
+				});
+			}
+
+			const category = categoryMap.get(categoryId);
+			category.toolTypes.push(
+				new ToolTypes(
+					entity.uuid,
+					entity.code,
+					entity.name,
+					entity.categoryId,
+					entity.status,
+					entity.image,
+					entity.garageId,
+					entity.createdAt,
+					entity.updatedAt,
+					entity.category?.code,
+					entity.category?.name,
+					entity.garage?.code ?? null,
+					entity.garage?.name ?? null,
+				),
+			);
+		});
+
+		const categories = Array.from(categoryMap.values());
+		const total = toolTypeEntities.length;
+
+		return {
+			categories,
+			total,
+		};
+	}
+
 	async findByUuid(uuid: string): Promise<ToolTypes | null> {
 		const toolTypeEntity = await this.toolTypesRepository.findOne({
 			where: { uuid },
